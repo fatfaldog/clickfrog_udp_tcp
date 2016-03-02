@@ -58,11 +58,14 @@ class ClickfrogUDPSender
 		$tries = 5;
 		$len = strlen($send_data);
 		$err_id = false;
+		$errors_count = 0;
 		for($i=0;$i<$tries;$i++)
 		{	
 			if($s_udp) {
 				//send mesg
-				@fwrite($s_udp, $send_data);				
+				if ($len != @fwrite($s_udp, $send_data)) {
+					$errors_count++;
+				}				
 			}
 			else {				
 				$err_id = 1;
@@ -70,6 +73,12 @@ class ClickfrogUDPSender
 			}			
 		}		
 		@fclose($s_udp);
+
+		//all tries failed
+		if ($errors_count == $tries) {
+			$err_id = 1;
+		}
+
 		if($err_id!== false && $err_id === 1)			
 			self::sendto_tcp($msg);
 		}
